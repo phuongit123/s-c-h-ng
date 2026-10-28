@@ -323,8 +323,17 @@ async def analyze(url: str, adapter: BaseAdapter) -> MediaMetadata:
 
     def _run() -> dict:
         opts = _base_opts(adapter, quiet=True)
-        with yt_dlp.YoutubeDL(opts) as ydl:
-            return ydl.extract_info(url, download=False)
+        try:
+            with yt_dlp.YoutubeDL(opts) as ydl:
+                return ydl.extract_info(url, download=False)
+        except Exception as exc:
+            err_str = str(exc).lower()
+            if adapter.key == "youtube" and any(k in err_str for k in ("confirm you're not a bot", "sign in", "bot")):
+                opts_fb = dict(opts)
+                opts_fb["extractor_args"] = {"youtube": {"player_client": ["web_embedded", "android"]}}
+                with yt_dlp.YoutubeDL(opts_fb) as ydl:
+                    return ydl.extract_info(url, download=False)
+            raise
 
     try:
         info = await asyncio.wait_for(
@@ -568,8 +577,18 @@ async def download_file(
             except Exception as seg_err:
                 log.warning("Tách phần tải thất bại (%s), fallback về tải một lượt", seg_err)
 
-        with yt_dlp.YoutubeDL(opts) as ydl:
-            info = ydl.extract_info(resolved_url, download=True)
+        try:
+            with yt_dlp.YoutubeDL(opts) as ydl:
+                info = ydl.extract_info(resolved_url, download=True)
+        except Exception as dl_exc:
+            err_str = str(dl_exc).lower()
+            if actual_adapter.key == "youtube" and any(k in err_str for k in ("confirm you're not a bot", "sign in", "bot")):
+                opts_fb = dict(opts)
+                opts_fb["extractor_args"] = {"youtube": {"player_client": ["web_embedded", "android"]}}
+                with yt_dlp.YoutubeDL(opts_fb) as ydl:
+                    info = ydl.extract_info(resolved_url, download=True)
+            else:
+                raise
             if info and info.get("_type") == "playlist":
                 entries = [e for e in (info.get("entries") or []) if e]
                 if entries:

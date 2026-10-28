@@ -136,11 +136,11 @@ export const App: React.FC = () => {
       {/* Main Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         {/* Navigation Tabs */}
-        <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
-          <div className="flex items-center space-x-1 sm:space-x-2">
+        <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
+          <div className="flex items-center space-x-1 sm:space-x-2 overflow-x-auto pb-1 max-w-full -mx-2 px-2 sm:mx-0 sm:px-0 flex-nowrap shrink-0">
             <button
               onClick={() => setActiveTab('download')}
-              className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition ${
+              className={`flex items-center space-x-1.5 sm:space-x-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition flex-shrink-0 ${
                 activeTab === 'download'
                   ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -152,7 +152,7 @@ export const App: React.FC = () => {
 
             <button
               onClick={() => setActiveTab('queue')}
-              className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition relative ${
+              className={`flex items-center space-x-1.5 sm:space-x-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition relative flex-shrink-0 ${
                 activeTab === 'queue'
                   ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -164,7 +164,7 @@ export const App: React.FC = () => {
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping absolute top-2 right-2" />
               )}
               {stats && stats.active > 0 && (
-                <span className="ml-1 text-xs px-1.5 py-0.5 rounded-full bg-emerald-500 text-white font-mono">
+                <span className="ml-1 text-[10px] sm:text-xs px-1.5 py-0.5 rounded-full bg-emerald-500 text-white font-mono">
                   {stats.active}
                 </span>
               )}
@@ -175,7 +175,7 @@ export const App: React.FC = () => {
                 setActiveTab('history');
                 fetchHistory();
               }}
-              className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition ${
+              className={`flex items-center space-x-1.5 sm:space-x-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition flex-shrink-0 ${
                 activeTab === 'history'
                   ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -187,7 +187,7 @@ export const App: React.FC = () => {
 
             <button
               onClick={() => setActiveTab('platforms')}
-              className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition ${
+              className={`flex items-center space-x-1.5 sm:space-x-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition flex-shrink-0 ${
                 activeTab === 'platforms'
                   ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'

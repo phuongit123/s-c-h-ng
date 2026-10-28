@@ -36,7 +36,13 @@ class YouTubeAdapter(BaseAdapter):
     max_resolution = None  # tùy nguồn (tới 4K/8K nếu nguồn cung cấp)
 
     def ydl_extra_opts(self) -> dict:
-        return {}
+        return {
+            "extractor_args": {
+                "youtube": {
+                    "player_client": ["web_embedded", "android"],
+                }
+            }
+        }
 
 
 class FacebookAdapter(BaseAdapter):

@@ -32,20 +32,21 @@ export const Navbar: React.FC<NavbarProps> = ({
     <header className="sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Brand */}
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-400 flex items-center justify-center text-white shadow-lg shadow-indigo-500/25">
-            <Download className="w-5 h-5" />
+        <div className="flex items-center space-x-2.5 sm:space-x-3 min-w-0">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-400 flex items-center justify-center text-white shadow-lg shadow-indigo-500/25 flex-shrink-0">
+            <Download className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
-          <div>
-            <div className="flex items-center space-x-2">
-              <span className="font-bold text-lg tracking-tight bg-gradient-to-r from-indigo-600 to-violet-600 dark:from-indigo-400 dark:to-violet-400 bg-clip-text text-transparent">
-                Universal Media Downloader
+          <div className="min-w-0">
+            <div className="flex items-center space-x-1.5 sm:space-x-2">
+              <span className="font-bold text-base sm:text-lg tracking-tight bg-gradient-to-r from-indigo-600 to-violet-600 dark:from-indigo-400 dark:to-violet-400 bg-clip-text text-transparent truncate">
+                <span className="sm:hidden">UMD Media</span>
+                <span className="hidden sm:inline">Universal Media Downloader</span>
               </span>
-              <span className="text-xs px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-400 font-medium">
+              <span className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-400 font-medium flex-shrink-0">
                 v{health?.version || '0.1.0'}
               </span>
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="hidden sm:block text-xs text-slate-500 dark:text-slate-400 truncate">
               FastAPI + yt-dlp + SSE Realtime Engine
             </p>
           </div>
@@ -94,11 +95,11 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
 
         {/* Right Action Tools */}
-        <div className="flex items-center space-x-2">
-          {/* Reveal Download Folder */}
+        <div className="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
+          {/* Reveal Download Folder (Desktop only) */}
           <button
             onClick={onRevealFolder}
-            className="p-2 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition"
+            className="hidden md:inline-flex p-2 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition"
             title="Mở thư mục tải về trong Explorer"
           >
             <FolderOpen className="w-5 h-5" />

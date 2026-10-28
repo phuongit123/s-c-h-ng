@@ -93,61 +93,63 @@ export const UrlInputSection: React.FC<UrlInputSectionProps> = ({
         </label>
 
         {/* Input Bar */}
-        <div className="relative flex items-center">
-          <div className="absolute left-4 text-slate-400 pointer-events-none">
-            <Link2 className="w-5 h-5" />
-          </div>
+        <div className="flex flex-col sm:flex-row gap-2.5">
+          <div className="relative flex-1 flex items-center">
+            <div className="absolute left-3.5 sm:left-4 text-slate-400 pointer-events-none">
+              <Link2 className="w-5 h-5" />
+            </div>
 
-          <input
-            type="url"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            placeholder="https://www.youtube.com/watch?v=... hoặc TikTok, Facebook, Bilibili, Douyin..."
-            className="w-full pl-12 pr-28 py-3.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition text-sm sm:text-base font-normal"
-            required
-          />
+            <input
+              type="url"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              placeholder="Dán link YouTube, TikTok, Facebook, Movy, Douyin..."
+              className="w-full pl-11 pr-14 py-3 sm:py-3.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition text-sm font-normal"
+              required
+            />
 
-          {/* Quick Paste or Clear Button */}
-          <div className="absolute right-3 flex items-center space-x-1">
-            {url ? (
-              <button
-                type="button"
-                onClick={() => setUrl('')}
-                className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg transition"
-                title="Xóa nội dung"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={handlePaste}
-                className="flex items-center space-x-1 px-2.5 py-1.5 text-xs text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 bg-slate-200/60 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 rounded-lg transition"
-                title="Dán từ Clipboard"
-              >
-                <Clipboard className="w-3.5 h-3.5" />
-                <span>Dán</span>
-              </button>
-            )}
-
-            <button
-              type="submit"
-              disabled={!url.trim() || isAnalyzing}
-              className="flex items-center space-x-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-lg font-medium text-sm transition shadow-sm"
-            >
-              {isAnalyzing ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Đang quét...</span>
-                </>
+            {/* Quick Paste or Clear Button */}
+            <div className="absolute right-2.5 flex items-center space-x-1">
+              {url ? (
+                <button
+                  type="button"
+                  onClick={() => setUrl('')}
+                  className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg transition"
+                  title="Xóa nội dung"
+                >
+                  <X className="w-4 h-4" />
+                </button>
               ) : (
-                <>
-                  <Search className="w-4 h-4" />
-                  <span>Phân tích</span>
-                </>
+                <button
+                  type="button"
+                  onClick={handlePaste}
+                  className="flex items-center space-x-1 px-2.5 py-1 text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 bg-slate-200/60 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 rounded-lg transition"
+                  title="Dán từ Clipboard"
+                >
+                  <Clipboard className="w-3.5 h-3.5" />
+                  <span>Dán</span>
+                </button>
               )}
-            </button>
+            </div>
           </div>
+
+          <button
+            type="submit"
+            disabled={!url.trim() || isAnalyzing}
+            className="w-full sm:w-auto flex items-center justify-center space-x-2 px-6 py-3 sm:py-3.5 bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] disabled:opacity-50 text-white rounded-xl font-semibold text-sm transition shadow-md shadow-indigo-600/20 flex-shrink-0"
+          >
+            {isAnalyzing ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Đang quét...</span>
+              </>
+            ) : (
+              <>
+                <Search className="w-4 h-4" />
+                <span>Phân tích</span>
+              </>
+            )}
+          </button>
         </div>
 
         {/* Live Detection Info Banner */}
