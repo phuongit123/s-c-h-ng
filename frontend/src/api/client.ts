@@ -148,6 +148,25 @@ export const api = {
     return handleResponse<{ download_dir: string }>(res);
   },
 
+  async getCookies(): Promise<{ has_cookies: boolean; cookie_file: string | null; size_bytes: number }> {
+    const res = await fetch(`${API_BASE}/settings/cookies`);
+    return handleResponse<{ has_cookies: boolean; cookie_file: string | null; size_bytes: number }>(res);
+  },
+
+  async setCookies(content: string): Promise<{ ok: boolean; has_cookies: boolean; size_bytes: number }> {
+    const res = await fetch(`${API_BASE}/settings/cookies`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content }),
+    });
+    return handleResponse<{ ok: boolean; has_cookies: boolean; size_bytes: number }>(res);
+  },
+
+  async deleteCookies(): Promise<{ ok: boolean; has_cookies: boolean }> {
+    const res = await fetch(`${API_BASE}/settings/cookies`, { method: 'DELETE' });
+    return handleResponse<{ ok: boolean; has_cookies: boolean }>(res);
+  },
+
   // Files
   async revealInFolder(filePath: string): Promise<{ ok: boolean }> {
     const res = await fetch(`${API_BASE}/files/reveal`, {

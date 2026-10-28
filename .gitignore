@@ -13,3 +13,6 @@ frontend/node_modules/
 frontend/dist/
 .tmp/
 *.sqlite3
+
+cloudflared.exe
+

@@ -95,7 +95,19 @@ class Settings:
         self.data_dir = Path(self.data_dir)
         self.download_dir = Path(self.download_dir)
         cf = os.getenv("UMD_COOKIE_FILE")
-        self.cookie_file = Path(cf) if cf else None
+        if cf and Path(cf).is_file():
+            self.cookie_file = Path(cf)
+        else:
+            default_cookie = self.data_dir / "cookies.txt"
+            raw_text = os.getenv("UMD_COOKIES_TEXT")
+            if raw_text:
+                self.data_dir.mkdir(parents=True, exist_ok=True)
+                default_cookie.write_text(raw_text.strip(), encoding="utf-8")
+                self.cookie_file = default_cookie
+            elif default_cookie.is_file():
+                self.cookie_file = default_cookie
+            else:
+                self.cookie_file = None
 
     def ensure_dirs(self) -> None:
         self.data_dir.mkdir(parents=True, exist_ok=True)

@@ -62,6 +62,10 @@ class DirBody(BaseModel):
     path: str
 
 
+class CookieBody(BaseModel):
+    content: str
+
+
 @router.get("/health", response_model=HealthResponse)
 async def health() -> HealthResponse:
     warnings: list[str] = []
@@ -277,6 +281,38 @@ async def set_download_dir(body: DirBody) -> dict:
         raise HTTPException(exc.http_status, detail=exc.to_dict()) from exc
     settings.download_dir = new_dir
     return {"download_dir": str(new_dir)}
+
+
+@router.get("/settings/cookies")
+async def get_cookies_info() -> dict:
+    has_cookies = bool(settings.cookie_file and settings.cookie_file.is_file())
+    size = settings.cookie_file.stat().st_size if has_cookies else 0
+    return {
+        "has_cookies": has_cookies,
+        "cookie_file": str(settings.cookie_file) if has_cookies else None,
+        "size_bytes": size,
+    }
+
+
+@router.post("/settings/cookies")
+async def set_cookies(body: CookieBody) -> dict:
+    content = body.content.strip()
+    if not content:
+        raise HTTPException(400, detail={"error_code": "empty_cookie", "message": "Nội dung cookie không được rỗng."})
+    target = settings.data_dir / "cookies.txt"
+    settings.data_dir.mkdir(parents=True, exist_ok=True)
+    target.write_text(content, encoding="utf-8")
+    settings.cookie_file = target
+    return {"ok": True, "has_cookies": True, "size_bytes": len(content.encode("utf-8"))}
+
+
+@router.delete("/settings/cookies")
+async def delete_cookies() -> dict:
+    target = settings.data_dir / "cookies.txt"
+    if target.is_file():
+        target.unlink(missing_ok=True)
+    settings.cookie_file = None
+    return {"ok": True, "has_cookies": False}
 
 
 # ------------------------- mở thư mục chứa file (desktop) --------------------
