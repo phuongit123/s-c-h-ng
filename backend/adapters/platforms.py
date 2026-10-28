@@ -39,7 +39,7 @@ class YouTubeAdapter(BaseAdapter):
         return {
             "extractor_args": {
                 "youtube": {
-                    "player_client": ["web_embedded", "android"],
+                    "player_client": ["visionos", "android"],
                 }
             }
         }

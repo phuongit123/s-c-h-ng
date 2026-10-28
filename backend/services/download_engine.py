@@ -328,11 +328,15 @@ async def analyze(url: str, adapter: BaseAdapter) -> MediaMetadata:
                 return ydl.extract_info(url, download=False)
         except Exception as exc:
             err_str = str(exc).lower()
-            if adapter.key == "youtube" and any(k in err_str for k in ("confirm you're not a bot", "sign in", "bot")):
-                opts_fb = dict(opts)
-                opts_fb["extractor_args"] = {"youtube": {"player_client": ["web_embedded", "android"]}}
-                with yt_dlp.YoutubeDL(opts_fb) as ydl:
-                    return ydl.extract_info(url, download=False)
+            if adapter.key == "youtube" and any(k in err_str for k in ("confirm you're not a bot", "sign in", "bot", "format is not available", "requested format")):
+                for fallback_client in [["visionos", "android"], ["android_vr", "android"], ["android"]]:
+                    try:
+                        opts_fb = dict(opts)
+                        opts_fb["extractor_args"] = {"youtube": {"player_client": fallback_client}}
+                        with yt_dlp.YoutubeDL(opts_fb) as ydl:
+                            return ydl.extract_info(url, download=False)
+                    except Exception:
+                        continue
             raise
 
     try:
@@ -582,11 +586,20 @@ async def download_file(
                 info = ydl.extract_info(resolved_url, download=True)
         except Exception as dl_exc:
             err_str = str(dl_exc).lower()
-            if actual_adapter.key == "youtube" and any(k in err_str for k in ("confirm you're not a bot", "sign in", "bot")):
-                opts_fb = dict(opts)
-                opts_fb["extractor_args"] = {"youtube": {"player_client": ["web_embedded", "android"]}}
-                with yt_dlp.YoutubeDL(opts_fb) as ydl:
-                    info = ydl.extract_info(resolved_url, download=True)
+            if actual_adapter.key == "youtube" and any(k in err_str for k in ("confirm you're not a bot", "sign in", "bot", "format is not available", "requested format")):
+                success = False
+                for fallback_client in [["visionos", "android"], ["android_vr", "android"], ["android"]]:
+                    try:
+                        opts_fb = dict(opts)
+                        opts_fb["extractor_args"] = {"youtube": {"player_client": fallback_client}}
+                        with yt_dlp.YoutubeDL(opts_fb) as ydl:
+                            info = ydl.extract_info(resolved_url, download=True)
+                        success = True
+                        break
+                    except Exception:
+                        continue
+                if not success:
+                    raise
             else:
                 raise
             if info and info.get("_type") == "playlist":
