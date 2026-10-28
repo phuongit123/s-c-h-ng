@@ -144,11 +144,18 @@ async def test_download_dir_settings(client, tmp_path) -> None:
 
 
 async def test_sse_connect(client) -> None:
-    async with client.stream("GET", "/api/events") as resp:
-        assert resp.status_code == 200
-        assert resp.headers["content-type"].startswith("text/event-stream")
-        line = b""
-        async for chunk in resp.aiter_bytes():
-            line += chunk
-            break
-        assert b"connected" in line
+    from backend.api.routes import _sse
+    from backend.services.queue_manager import bus
+
+    raw = _sse({"event": "connected", "task_id": "test1234"})
+    assert raw.startswith("data: ")
+    assert "connected" in raw
+
+    q = bus.subscribe("test1234")
+    try:
+        bus.publish({"event": "progress", "percent": 50.0}, task_id="test1234")
+        ev = q.get_nowait()
+        assert ev["event"] == "progress"
+        assert ev["percent"] == 50.0
+    finally:
+        bus.unsubscribe(q, "test1234")

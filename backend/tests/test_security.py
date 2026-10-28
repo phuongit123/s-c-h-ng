@@ -71,5 +71,5 @@ def test_output_dir_relative_inside_base(tmp_path, monkeypatch) -> None:
     from backend.config import settings
     monkeypatch.setattr(settings, "download_dir", tmp_path)
     resolved = resolve_safe_output_dir("subfolder/nested")
-    assert str(resolved).endswith("subfolder/nested")
+    assert resolved.as_posix().endswith("subfolder/nested")
     assert resolved.is_dir()

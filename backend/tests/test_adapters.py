@@ -29,6 +29,8 @@ from backend.errors import ForbiddenHostError, InvalidURLError
     ("https://dai.ly/x7tgad0", "dailymotion"),
     ("https://pin.it/abcdefg", "pinterest"),
     ("https://www.threads.net/@user/post/Cabcdef", "threads"),
+    ("https://www.movy.sx/movie/1283515", "movy"),
+    ("https://www.movy.sx/", "movy"),
     ("https://shopee.vn/i/123.456", "shopee_video"),
 ])
 def test_platform_detection(url: str, key: str) -> None:
@@ -48,6 +50,30 @@ def test_dongbao_not_claimed_until_verified() -> None:
     assert is_generic  # rơi về generic, không phải adapter 'dongbao' supported
     dong = registry.get("dongbao")
     assert dong is not None and dong.status == SupportStatus.UNSUPPORTED
+
+
+def test_douyin_transform_and_validation() -> None:
+    douyin = registry.get("douyin")
+    assert douyin is not None
+    # modal_id gets transformed to /video/
+    transformed = douyin.transform_url("https://www.douyin.com/jingxuan?modal_id=7427492817291000000")
+    assert transformed == "https://www.douyin.com/video/7427492817291000000"
+    assert douyin.validate_url(transformed) is True
+
+    # Feed URL without video ID raises InvalidURLError
+    with pytest.raises(InvalidURLError):
+        douyin.validate_url("https://www.douyin.com/jingxuan")
+    with pytest.raises(InvalidURLError):
+        douyin.validate_url("https://www.douyin.com/?recommend=1")
+
+
+def test_movy_catalog_validation() -> None:
+    movy = registry.get("movy")
+    assert movy is not None
+    assert movy.validate_url("https://www.movy.sx/movie/1283515") is True
+    assert movy.validate_url("https://www.movy.sx/tv/105248") is True
+    with pytest.raises(InvalidURLError):
+        movy.validate_url("https://www.movy.sx/")
 
 
 def test_netflix_official_only_and_blocked() -> None:

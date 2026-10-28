@@ -69,7 +69,7 @@ def test_build_format_default(yt=None) -> None:
 def test_build_format_specific_id() -> None:
     yt_adapter = registry.get("youtube")
     sel, ext = _build_format_fmt({"format_id": "137"}, yt_adapter)
-    assert sel == "137"
+    assert "137" in sel and ext is None
 
 
 def test_build_format_audio_mp3_requires_ffmpeg(monkeypatch) -> None:

@@ -31,7 +31,7 @@ import subprocess
 from pathlib import Path
 
 from fastapi import APIRouter, HTTPException, Request
-from fastapi.responses import StreamingResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel, Field
 
 from backend.adapters.registry import registry
@@ -112,11 +112,15 @@ async def detect(body: UrlBody) -> DetectResponse:
             message_vi=("Không nhận diện được nền tảng đặc thù. Hệ thống sẽ THỬ phân tích bằng "
                         "generic extractor khi bạn bấm Analyze — kết quả phụ thuộc cấu trúc trang."))
     info = adapter.get_capabilities()
-    msg = f"Nhận diện: {adapter.display_name} ({info.status.value})."
-    if not adapter.download_allowed:
-        msg += " " + adapter.conditions_vi
+    custom_msg = adapter.detect_message(url)
+    if custom_msg:
+        msg = custom_msg
+    else:
+        msg = f"Nhận diện: {adapter.display_name} ({info.status.value})."
+        if not adapter.download_allowed:
+            msg += " " + adapter.conditions_vi
     return DetectResponse(
-        url=url, platform_key=adapter.key, platform_display_name=adapter.display_name,
+        url=adapter.transform_url(url), platform_key=adapter.key, platform_display_name=adapter.display_name,
         recognized=True, status=info.status, message_vi=msg)
 
 
@@ -148,6 +152,9 @@ async def analyze_ep(body: UrlBody) -> dict:
         raise HTTPException(exc.http_status, detail=exc.to_dict()) from exc
     except Exception as exc:
         log.exception("Lỗi analyze không mong muốn")
+        app_err = download_engine.classify_ydl_error(exc)
+        if isinstance(app_err, AppError):
+            raise HTTPException(app_err.http_status, detail=app_err.to_dict()) from exc
         raise HTTPException(500, detail={"error_code": "internal_error",
                                          "message": str(exc)[:200],
                                          "hint_vi": "Lỗi nội bộ khi phân tích."}) from exc
@@ -217,6 +224,22 @@ async def delete_task(task_id: str) -> dict:
         return {"ok": True}
     except AppError as exc:
         raise HTTPException(exc.http_status, detail=exc.to_dict()) from exc
+
+
+@router.get("/tasks/{task_id}/download")
+async def download_task_file(task_id: str) -> FileResponse:
+    """Tải trực tiếp file thành phẩm về máy khách (dành cho Web Public / Mobile / Desktop)."""
+    task = await qm._require(task_id)
+    if not task.file_path or not Path(task.file_path).is_file():
+        raise HTTPException(404, detail={"error_code": "file_not_found",
+                                         "message": "File chưa sẵn sàng hoặc đã bị xóa."})
+    p = Path(task.file_path)
+    encoded = urllib.parse.quote(p.name)
+    return FileResponse(
+        path=p,
+        filename=p.name,
+        headers={"Content-Disposition": f"attachment; filename*=UTF-8''{encoded}"}
+    )
 
 
 @router.get("/history")

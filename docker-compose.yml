@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  umd:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: universal-media-downloader
+    restart: unless-stopped
+    ports:
+      - "8756:8756"
+    environment:
+      - PORT=8756
+      - UMD_MAX_CONCURRENT=3
+      - UMD_TASK_TIMEOUT=7200
+      - UMD_ANALYZE_TIMEOUT=60
+    volumes:
+      - umd_data:/app/data
+      - umd_downloads:/app/downloads
+
+volumes:
+  umd_data:
+  umd_downloads:

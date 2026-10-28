@@ -1,5 +1,15 @@
 __pycache__/
 *.pyc
-.env.example
+*.pyo
+*.pyd
+.venv/
+.env
 .pytest-tmp/
+.pytest_cache/
+universal-media-downloader/
 universal-media-downloader.tar.gz
+node_modules/
+frontend/node_modules/
+frontend/dist/
+.tmp/
+*.sqlite3

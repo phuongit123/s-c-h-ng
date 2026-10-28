@@ -12,10 +12,12 @@ class AppError(Exception):
     # Hướng khắc phục mặc định (tiếng Việt) — frontend có thể dịch.
     hint_vi = "Lỗi không xác định. Hãy thử lại hoặc kiểm tra log backend."
 
-    def __init__(self, message: str = "", *, details: dict | None = None) -> None:
+    def __init__(self, message: str = "", *, details: dict | None = None, hint_vi: str | None = None) -> None:
         super().__init__(message or self.__doc__)
         self.message = message or self.__doc__ or self.error_code
         self.details = details or {}
+        if hint_vi is not None:
+            self.hint_vi = hint_vi
 
     def to_dict(self) -> dict:
         return {

@@ -9,6 +9,7 @@
 from __future__ import annotations
 
 import ipaddress
+import os
 import re
 import unicodedata
 from pathlib import Path
@@ -121,11 +122,20 @@ def resolve_safe_output_dir(raw: str | None) -> Path:
         raise InvalidURLError(f"Không phân giải được thư mục lưu: {exc}") from exc
     # Cho phép mọi thư mục tuyệt đối mà process có quyền ghi (ứng dụng desktop
     # của riêng người dùng) — nhưng chặn rõ các vị trí hệ thống nhạy cảm.
-    forbidden_prefixes = [Path("/etc"), Path("/bin"), Path("/sbin"), Path("/usr"),
-                          Path("/boot"), Path("/dev"), Path("/proc"), Path("/sys")]
+    forbidden_prefixes = [
+        Path("/etc"), Path("/bin"), Path("/sbin"), Path("/usr"),
+        Path("/boot"), Path("/dev"), Path("/proc"), Path("/sys"),
+        Path(os.environ.get("SystemRoot", "C:/Windows")),
+        Path(os.environ.get("ProgramFiles", "C:/Program Files")),
+    ]
+    drive = resolved.drive
     for fp in forbidden_prefixes:
-        if resolved == fp or resolved.is_relative_to(fp):
-            raise InvalidURLError("Thư mục lưu nằm trong vùng hệ thống, bị chặn.")
+        check_fp = Path(drive + str(fp)) if drive and not fp.drive else fp
+        try:
+            if resolved == check_fp or resolved.is_relative_to(check_fp):
+                raise InvalidURLError("Thư mục lưu nằm trong vùng hệ thống, bị chặn.")
+        except ValueError:
+            pass
     if any(part.startswith("..") for part in candidate.parts):
         raise InvalidURLError("Đường dẫn chứa '..', bị chặn (path traversal).")
     resolved.mkdir(parents=True, exist_ok=True)

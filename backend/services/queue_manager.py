@@ -81,6 +81,8 @@ class QueueManager:
         if adapter is None:
             from backend.errors import UnsupportedPlatformError
             raise UnsupportedPlatformError(url)
+        url = adapter.transform_url(url)
+        adapter.validate_url(url)
         if not adapter.download_allowed:
             from backend.errors import UnsupportedPlatformError
             raise UnsupportedPlatformError(
@@ -266,14 +268,17 @@ class QueueManager:
 
                 def progress_cb(payload: dict) -> None:
                     p = payload or {}
-                    task.progress = TaskProgress(
-                        percent=p.get("percent", task.progress.percent),
-                        downloaded_bytes=p.get("downloaded_bytes", task.progress.downloaded_bytes),
-                        total_bytes=p.get("total_bytes", task.progress.total_bytes),
-                        speed_bps=p.get("speed_bps", task.progress.speed_bps),
-                        eta_seconds=p.get("eta_seconds", task.progress.eta_seconds),
-                        status_text=p.get("status_text", task.progress.status_text),
-                    )
+                    try:
+                        task.progress = TaskProgress(
+                            percent=p.get("percent", task.progress.percent),
+                            downloaded_bytes=p.get("downloaded_bytes", task.progress.downloaded_bytes),
+                            total_bytes=p.get("total_bytes", task.progress.total_bytes),
+                            speed_bps=p.get("speed_bps", task.progress.speed_bps),
+                            eta_seconds=p.get("eta_seconds", task.progress.eta_seconds),
+                            status_text=p.get("status_text", task.progress.status_text),
+                        )
+                    except Exception as err:
+                        pass
                     self.bus.publish({**p, "task_id": task_id}, task_id=task_id)
 
                 final_path = await download_file(

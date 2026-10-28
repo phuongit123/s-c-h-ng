@@ -113,12 +113,39 @@ class Settings:
             return 0
 
 
+def _ensure_ffmpeg_in_path() -> None:
+    """Tự động tìm kiếm và nạp FFmpeg vào PATH nếu chưa có."""
+    if shutil.which("ffmpeg") and shutil.which("ffprobe"):
+        return
+    candidates = [
+        r"C:\Users\tuanl\AppData\Local\hermes\tools\ffmpeg-9.0.1-win32-x64\bin",
+        Path.home() / "AppData" / "Local" / "hermes" / "tools" / "ffmpeg-9.0.1-win32-x64" / "bin",
+        Path.home() / "AppData" / "Local" / "Microsoft" / "WinGet" / "Packages",
+        Path("C:/ffmpeg/bin"),
+        Path("C:/Program Files/ffmpeg/bin"),
+    ]
+    for c in candidates:
+        p = Path(c)
+        if p.is_dir() and (p / "ffmpeg.exe").is_file():
+            os.environ["PATH"] = str(p) + os.pathsep + os.environ.get("PATH", "")
+            return
+    hermes_tools = Path.home() / "AppData" / "Local" / "hermes" / "tools"
+    if hermes_tools.is_dir():
+        for d in hermes_tools.glob("ffmpeg*/bin"):
+            if (d / "ffmpeg.exe").is_file():
+                os.environ["PATH"] = str(d) + os.pathsep + os.environ.get("PATH", "")
+                return
+
+
+_ensure_ffmpeg_in_path()
+
 settings = Settings()
 settings.ensure_dirs()
 
 
 def ffmpeg_available() -> bool:
     """Kiểm tra FFmpeg có thực sự tồn tại trên hệ thống (không giả định)."""
+    _ensure_ffmpeg_in_path()
     path = shutil.which("ffmpeg")
     if not path:
         return False

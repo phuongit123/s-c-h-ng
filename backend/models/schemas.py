@@ -103,6 +103,7 @@ class DownloadOptions(BaseModel):
     format_id: str | None = None          # nếu None => tốt nhất có thể
     audio_only: bool = False
     audio_format: str | None = None       # mp3/m4a khi audio_only và FFmpeg có sẵn
+    download_mode: str = "medium"         # "fast" (8 phần), "medium" (4 phần), "slow" (1-2 phần)
     output_dir: str | None = None         # đã được kiểm tra path traversal ở service
     filename_template: str | None = None
     skip_duplicate: bool = True
@@ -115,6 +116,16 @@ class TaskProgress(BaseModel):
     speed_bps: float | None = None
     eta_seconds: float | None = None
     status_text: str = ""
+
+    @field_validator("downloaded_bytes", "total_bytes", mode="before")
+    @classmethod
+    def _coerce_int(cls, v: Any) -> int | None:
+        if v is None:
+            return None
+        try:
+            return int(round(float(v)))
+        except (ValueError, TypeError):
+            return None
 
 
 class TaskOut(BaseModel):

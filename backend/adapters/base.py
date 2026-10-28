@@ -16,7 +16,7 @@ import abc
 import re
 from urllib.parse import urlparse
 
-from backend.models.schemas import PlatformInfo, SupportStatus
+from backend.models.schemas import MediaMetadata, PlatformInfo, SupportStatus
 
 
 class BaseAdapter(abc.ABC):
@@ -55,6 +55,22 @@ class BaseAdapter(abc.ABC):
         if self.url_patterns:
             return any(p.search(url) for p in self.url_patterns)
         return True
+
+    def transform_url(self, url: str) -> str:
+        """Chuẩn hóa hoặc trích xuất URL video thực nếu cần (mặc định giữ nguyên)."""
+        return url
+
+    def detect_message(self, url: str) -> str | None:
+        """Thông điệp phát hiện tùy biến khi user nhập URL này (ví dụ cảnh báo feed/catalog)."""
+        return None
+
+    def resolve_download_url(self, url: str) -> str:
+        """URL thực tế dùng để tải (ví dụ Movy -> YouTube trailer)."""
+        return self.transform_url(url)
+
+    async def custom_analyze(self, url: str) -> MediaMetadata | None:
+        """Nếu adapter cần trích xuất riêng biệt (như Movy), override phương thức này."""
+        return None
 
     # ---------- Khả năng ----------
     def get_capabilities(self) -> PlatformInfo:

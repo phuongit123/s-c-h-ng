@@ -63,8 +63,14 @@ async def test_add_task_states(qm, tmp_path, monkeypatch) -> None:
     assert any(e["event"] == "task_completed" for e in got)
 
 
-async def test_cancel_pending_task(qm, tmp_path) -> None:
+async def test_cancel_pending_task(qm, tmp_path, monkeypatch) -> None:
     manager, db, _ = qm
+    async def fake_analyze(url, adapter):
+        from backend.services.download_engine import MediaMetadata
+        return MediaMetadata(url=url, platform_key=adapter.key, title="Mock Video",
+                             thumbnail=None, duration=60, uploader="tester",
+                             webpage_url=url, formats=[])
+    monkeypatch.setattr("backend.services.queue_manager.analyze", fake_analyze)
     # chặn semaphore để task không chạy
     manager._sem = asyncio.Semaphore(0)
     task = await manager.add(_opts("https://youtu.be/dQw4w9WgXcQ", tmp_path))
@@ -77,6 +83,14 @@ async def test_pause_resume(qm, tmp_path, monkeypatch) -> None:
     started = asyncio.Event()
     release = asyncio.Event()
     fake_file = tmp_path / "p.mp4"
+
+    async def fake_analyze(url, adapter):
+        from backend.services.download_engine import MediaMetadata
+        return MediaMetadata(url=url, platform_key=adapter.key, title="Mock Video",
+                             thumbnail=None, duration=60, uploader="tester",
+                             webpage_url=url, formats=[])
+
+    monkeypatch.setattr("backend.services.queue_manager.analyze", fake_analyze)
 
     async def slow_download(url, adapter, options, progress_cb, cancel):
         started.set()
