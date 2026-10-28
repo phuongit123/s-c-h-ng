@@ -444,7 +444,7 @@ async def download_file(
         raise InsufficientDiskSpaceError(
             f"Còn {settings.free_disk_bytes() // (1024*1024)} MB dung lượng trống.")
 
-    out_dir: Path = options["output_dir"]
+    out_dir: Path = Path(options["output_dir"])
     fmt_sel, target_ext = _build_format_fmt(options, actual_adapter)
 
     def _run() -> Path:
@@ -581,6 +581,8 @@ async def download_file(
             except Exception as seg_err:
                 log.warning("Tách phần tải thất bại (%s), fallback về tải một lượt", seg_err)
 
+        info = None
+        used_opts = opts
         try:
             with yt_dlp.YoutubeDL(opts) as ydl:
                 info = ydl.extract_info(resolved_url, download=True)
@@ -594,6 +596,7 @@ async def download_file(
                         opts_fb["extractor_args"] = {"youtube": {"player_client": fallback_client}}
                         with yt_dlp.YoutubeDL(opts_fb) as ydl:
                             info = ydl.extract_info(resolved_url, download=True)
+                        used_opts = opts_fb
                         success = True
                         break
                     except Exception:
@@ -602,13 +605,15 @@ async def download_file(
                     raise
             else:
                 raise
-            if info and info.get("_type") == "playlist":
-                entries = [e for e in (info.get("entries") or []) if e]
-                if entries:
-                    info = entries[0]
-            final_path = None
-            with contextlib.suppress(Exception):
-                req = ydl.prepare_filename(info or {})
+
+        if info and info.get("_type") == "playlist":
+            entries = [e for e in (info.get("entries") or []) if e]
+            if entries:
+                info = entries[0]
+        final_path = None
+        with contextlib.suppress(Exception):
+            with yt_dlp.YoutubeDL(used_opts) as ydl_prep:
+                req = ydl_prep.prepare_filename(info or {})
                 final_path = Path(req)
         # Tìm file thật sự được tạo (extension có thể khác dự đoán)
         candidates: list[Path] = []
