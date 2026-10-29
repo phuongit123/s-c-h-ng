@@ -332,7 +332,9 @@ async def analyze(url: str, adapter: BaseAdapter) -> MediaMetadata:
                 for fallback_client in [["visionos", "android"], ["android_vr", "android"], ["android"]]:
                     try:
                         opts_fb = dict(opts)
-                        opts_fb["extractor_args"] = {"youtube": {"player_client": fallback_client}}
+                        extractor_args = dict(opts.get("extractor_args") or {})
+                        extractor_args["youtube"] = {"player_client": fallback_client}
+                        opts_fb["extractor_args"] = extractor_args
                         with yt_dlp.YoutubeDL(opts_fb) as ydl:
                             return ydl.extract_info(url, download=False)
                     except Exception:
@@ -593,7 +595,9 @@ async def download_file(
                 for fallback_client in [["visionos", "android"], ["android_vr", "android"], ["android"]]:
                     try:
                         opts_fb = dict(opts)
-                        opts_fb["extractor_args"] = {"youtube": {"player_client": fallback_client}}
+                        extractor_args = dict(opts.get("extractor_args") or {})
+                        extractor_args["youtube"] = {"player_client": fallback_client}
+                        opts_fb["extractor_args"] = extractor_args
                         with yt_dlp.YoutubeDL(opts_fb) as ydl:
                             info = ydl.extract_info(resolved_url, download=True)
                         used_opts = opts_fb

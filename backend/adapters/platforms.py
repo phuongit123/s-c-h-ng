@@ -38,8 +38,11 @@ class YouTubeAdapter(BaseAdapter):
     def ydl_extra_opts(self) -> dict:
         return {
             "extractor_args": {
+                "youtubepot-bgutilhttp": {
+                    "base_url": ["http://127.0.0.1:4416"],
+                },
                 "youtube": {
-                    "player_client": ["visionos", "android"],
+                    "player_client": ["visionos", "android", "web", "ios"],
                 }
             }
         }

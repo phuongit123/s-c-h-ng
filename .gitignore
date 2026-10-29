@@ -15,4 +15,7 @@ frontend/dist/
 *.sqlite3
 
 cloudflared.exe
+bgutil-pot.exe
+bgutil-plugin.zip
+bgutil-plugin/
 
