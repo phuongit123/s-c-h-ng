@@ -1,70 +1,66 @@
 @echo off
 rem ============================================================
-rem  UMD - RUN ALL-IN-ONE  (double-click file nay)
-rem  Dat file NAY vao thu muc goc cua project, noi CO san:
-rem      backend\requirements.txt
-rem  Duong dan may ban: C:\projectD-acl-out\workspace.tar(3)\universal-media-downloader
-rem  File nay tu tim duoc requirements.txt o cung cho voi no, nen
-rem  ten thu muc co dau ( ) hay khoang trang deu chay binh thuong.
+rem  UNIVERSAL MEDIA DOWNLOADER (UMD) — KHỞI CHẠY 1-CLICK (WINDOWS)
+rem  Double-click file này để tự động cài đặt và mở giao diện Web.
 rem ============================================================
 setlocal enabledelayedexpansion
+chcp 65001 >nul
 
-rem --- Di chuyen den thu muc chua file bat nay (thu muc goc project) ---
 cd /d "%~dp0"
 
 if not exist "requirements.txt" (
-  echo LOI: Khong thay requirements.txt trong:
-  echo    %CD%
-  echo Hay copy file nay vao THU MUC GOC cua project, tuc la thu muc
-  echo chua san folder "backend" va file "requirements.txt".
-  echo Neu project cua ban nam sau 1 cap thu muc phat sinh nua, hay di chuot
-  echo vao trong do tim dung thu muc goc roi dat file bat o do.
+  echo [LỖI] Không tìm thấy requirements.txt trong thư mục hiện tại:
+  echo   %CD%
+  echo Hãy đảm bảo file run-umd.bat nằm trong thư mục gốc của dự án.
   pause
   exit /b 1
 )
 
 if not exist "backend\main.py" (
-  echo LOI: Khong thay backend\main.py trong:
-  echo    %CD%
-  echo Thu muc bat file phai chua folder "backend".
+  echo [LỖI] Không tìm thấy thư mục backend\ trong:
+  echo   %CD%
   pause
   exit /b 1
 )
 
-echo ==============================================
-echo  Universal Media Downloader - Backend setup
-echo  Thu muc lam viec : %CD%
-echo ==============================================
+echo ============================================================
+echo   UNIVERSAL MEDIA DOWNLOADER (UMD) - TỰ ĐỘNG KHỞI CHẠY
+echo   Thư mục làm việc : %CD%
+echo ============================================================
+echo.
 
-rem --- Chon interpreter Python 3.10 - 3.12 (uu tien 3.12) ---
+rem --- Tìm interpreter Python (ưu tiên 3.12, 3.11, 3.10, 3.13, 3.14 hoặc python) ---
 set "PYCMD="
-for %%V in (3.12 3.11 3.10) do (
+for %%V in (3.12 3.11 3.10 3.13 3.14) do (
   if not defined PYCMD (
     py -%%V -c "pass" >nul 2>nul && set "PYCMD=py -%%V"
   )
 )
 if not defined PYCMD (
-  rem Thu python mac dinh neu no la 3.10 - 3.14
-  python --version 2>nul | findstr /r "Python 3\.1[0-4]" >nul && set "PYCMD=python"
+  python --version 2>nul | findstr /r "Python 3\.[1-9][0-9]*" >nul && set "PYCMD=python"
 )
 if not defined PYCMD (
-  echo LOI: May ban chua co Python 3.10 - 3.12.
-  echo  1) Mo https://www.python.org/downloads/release/python-31210/
-  echo  2) Tai "Windows installer (64-bit)", chay, TICH chon "Add python.exe to PATH".
-  echo  3) Chay lai file bat nay.
+  echo [LỖI] Chưa tìm thấy Python 3.10+ trên máy tính của bạn.
+  echo.
+  echo Hướng dẫn cài đặt nhanh:
+  echo   Cách 1: Tải bộ cài tại: https://www.python.org/downloads/
+  echo          (LƯU Ý: Nhớ TÍCH chọn "Add python.exe to PATH" khi cài đặt)
+  echo   Cách 2: Gõ lệnh trong Terminal: winget install Python.Python.3.12
+  echo.
   pause
   exit /b 1
 )
 
-echo Dang su dung interpreter:
+echo [*] Đang dùng:
 "!PYCMD!" --version
+echo.
 
-rem --- Tao virtualenv neu chua co ---
+rem --- Tạo virtualenv .venv nếu chưa có ---
 if not exist ".venv\Scripts\python.exe" (
-  echo Dang tao virtualenv .venv ^(lan dau, hoi lau^)...
+  echo [*] Đang khởi tạo môi trường ảo .venv (chỉ chạy lần đầu)...
   "!PYCMD!" -m venv .venv
   if errorlevel 1 (
-    echo LOI: Khong tao duoc venv. Thu chay: "!PYCMD!" -m venv .venv
+    echo [LỖI] Không tạo được venv. Thử chạy bằng tay: "!PYCMD!" -m venv .venv
     pause
     exit /b 1
   )
@@ -72,35 +68,40 @@ if not exist ".venv\Scripts\python.exe" (
 
 call ".venv\Scripts\activate.bat"
 if errorlevel 1 (
-  echo LOI: Khong activate duoc .venv
+  echo [LỖI] Không thể kích hoạt môi trường .venv
   pause
   exit /b 1
 )
 
-rem --- Cai dependency (chi lan dau, lan sau rat nhanh) ---
-echo Dang kiem tra / cai dependency...
+rem --- Cài đặt dependency ---
+echo [*] Đang kiểm tra thư viện backend...
 python -m pip install --upgrade pip >nul 2>nul
-python -m pip install -r requirements.txt
+python -m pip install -q -r requirements.txt
 if errorlevel 1 (
-  echo LOI: pip install that bai. Kiem tra mang Internet roi double-click lai file nay.
+  echo [LỖI] Không thể cài đặt dependency. Kiểm tra kết nối Internet và thử lại.
   pause
   exit /b 1
 )
 
-rem --- Kiem tra FFmpeg (khong chan, chi canh bao) ---
+rem --- Kiểm tra FFmpeg ---
 where ffmpeg >nul 2>nul || (
-  echo ^[CANH BAO^] FFmpeg chua cai. Van tai duoc video don le, nhung ghep
-  echo            audio+video hoac doi MP3 se loi. Cai bang lenh:
-  echo              winget install Gyan.FFmpeg
+  echo [CẢNH BÁO] Chưa cài FFmpeg trên máy.
+  echo           Video đơn lẻ vẫn tải được, nhưng ghép Audio+Video chất lượng cao cần FFmpeg.
+  echo           Cài nhanh bằng lệnh: winget install Gyan.FFmpeg
+  echo.
 )
 
+echo ============================================================
+echo   ỨNG DỤNG ĐÃ SẴN SÀNG!
+echo   Giao diện Web:     http://127.0.0.1:8756
+echo   Kiểm tra hệ thống: http://127.0.0.1:8756/api/health
+echo   Tài liệu API:      http://127.0.0.1:8756/docs
+echo   (Đóng cửa sổ này để dừng ứng dụng)
+echo ============================================================
 echo.
-echo ==============================================
-echo  Backend dang chay:  http://127.0.0.1:8756
-echo  Kiem tra khoe:      http://127.0.0.1:8756/api/health
-echo  Thu API (Swagger):  http://127.0.0.1:8756/docs
-echo  Dung server: Ctrl+C trong cua so nay
-echo ==============================================
-start "" "http://127.0.0.1:8756/docs"
+
+rem Mở trực tiếp Web UI trên trình duyệt mặc định
+start "" "http://127.0.0.1:8756"
+
 python -m uvicorn backend.main:app --host 127.0.0.1 --port 8756
 pause

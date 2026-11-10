@@ -32,6 +32,12 @@ async def test_add_task_states(qm, tmp_path, monkeypatch) -> None:
     events = bus.subscribe()
     fake_file = tmp_path / "fake.mp4"
 
+    async def fake_analyze(url, adapter):
+        from backend.services.download_engine import MediaMetadata
+        return MediaMetadata(url=url, platform_key=adapter.key, title="Mock Video",
+                             thumbnail=None, duration=60, uploader="tester",
+                             webpage_url=url, formats=[])
+
     async def fake_download(url, adapter, options, progress_cb, cancel):
         # giả lập tiến trình thật: ghi file tăng dần rồi hoàn tất
         fake_file.write_bytes(b"123")
@@ -41,6 +47,7 @@ async def test_add_task_states(qm, tmp_path, monkeypatch) -> None:
         fake_file.write_bytes(b"1234567890")
         return fake_file
 
+    monkeypatch.setattr("backend.services.queue_manager.analyze", fake_analyze)
     monkeypatch.setattr("backend.services.queue_manager.download_file", fake_download)
     task = await manager.add(_opts("https://www.youtube.com/watch?v=dQw4w9WgXcQ", tmp_path))
     assert task.state == TaskState.QUEUED
@@ -190,10 +197,17 @@ async def test_duplicate_detection(qm, tmp_path, monkeypatch) -> None:
     manager, db, _ = qm
     f = tmp_path / "dup.mp4"
 
+    async def fake_analyze(url, adapter):
+        from backend.services.download_engine import MediaMetadata
+        return MediaMetadata(url=url, platform_key=adapter.key, title="Mock Video",
+                             thumbnail=None, duration=60, uploader="tester",
+                             webpage_url=url, formats=[])
+
     async def ok(url, adapter, options, progress_cb, cancel):
         f.write_bytes(b"x")
         return f
 
+    monkeypatch.setattr("backend.services.queue_manager.analyze", fake_analyze)
     monkeypatch.setattr("backend.services.queue_manager.download_file", ok)
     url = "https://youtu.be/dQw4w9WgXcQ"
     t = await manager.add(_opts(url, tmp_path))

@@ -1,4 +1,5 @@
 @echo off
+setlocal enabledelayedexpansion
 chcp 65001 >nul
 title Universal Media Downloader - Online Mode (Cloudflare Tunnel)
 
@@ -19,13 +20,19 @@ if %errorlevel% neq 0 (
 )
 
 :: 2. Kiểm tra venv
-if not exist "universal-media-downloader\.venv\Scripts\python.exe" (
-    echo [1/3] Đang khởi tạo môi trường Python cục bộ...
-    python -m venv universal-media-downloader\.venv
-    call universal-media-downloader\.venv\Scripts\activate.bat
-    pip install -q -r requirements.txt
+set "PY_EXE="
+if exist ".venv\Scripts\python.exe" (
+    set "PY_EXE=.venv\Scripts\python.exe"
+    echo [1/3] Môi trường Python đã sẵn sàng (.venv).
+) else if exist "universal-media-downloader\.venv\Scripts\python.exe" (
+    set "PY_EXE=universal-media-downloader\.venv\Scripts\python.exe"
+    echo [1/3] Môi trường Python đã sẵn sàng (universal-media-downloader\.venv).
 ) else (
-    echo [1/3] Môi trường Python đã sẵn sàng.
+    echo [1/3] Đang khởi tạo môi trường Python cục bộ (.venv)...
+    python -m venv .venv
+    call .venv\Scripts\activate.bat
+    pip install -q -r requirements.txt
+    set "PY_EXE=.venv\Scripts\python.exe"
 )
 
 :: 3. Kiểm tra cloudflared
@@ -43,7 +50,7 @@ if not exist "cloudflared.exe" (
 
 :: 4. Khởi động backend uvicorn chạy ngầm
 echo [3/3] Khởi động máy chủ Universal Media Downloader...
-start /b "" "universal-media-downloader\.venv\Scripts\python.exe" -m uvicorn backend.main:app --host 127.0.0.1 --port 8756 >nul 2>&1
+start /b "" "!PY_EXE!" -m uvicorn backend.main:app --host 127.0.0.1 --port 8756 >nul 2>&1
 
 :: Chờ backend khởi động 2 giây
 timeout /t 2 /nobreak >nul
